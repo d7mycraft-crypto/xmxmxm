@@ -1,0 +1,1 @@
+=IF(ISERROR(FIND(" ", B2)), PROPER(B2), PROPER(LEFT(B2, FIND(" ", B2)-1) & " " & TRIM(RIGHT(SUBSTITUTE(B2, " ", REPT(" ", 100)), 100))))
