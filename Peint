@@ -1,0 +1,4 @@
+VLOOKUP(B1, Sheet1!A:Z, 2, FALSE)⁠
+
+VLOOKUP(B1, Sheet1!A:Z, 3, FALSE)⁠ (لو افترضنا العنوان في العمود الثالث C).
+VLOOKUP(B1, Sheet1!A:Z, 4, FALSE)⁠ (لو افترضنا النسبة في العمود الرابع D).
