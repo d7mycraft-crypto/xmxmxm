@@ -1,0 +1,76 @@
+تمام، هذا الترتيب الكامل. نفّذه بالتسلسل.
+
+**الأعمدة في Sheet3:** A=MRN، B=Patient Name، C=Mobile No، D=Address، E=Share، F=Non Fr، G=Fridge، H=Delivery، I=PH، J=Remarks (العناوين في الصف 1، والبيانات من الصف 2).
+
+---
+
+**الطريقة الأولى: الماكرو (الزر ينسخ من Sheet2 إلى Sheet3)**
+
+**1. تأكد من الأسماء:** الشيتات تحت اسمها بالضبط `Sheet1` و`Sheet2` و`Sheet3`.
+
+**2. صيغ Sheet2** (اكتب رقم الملف في B2 بتنسيق Text):
+
+| الخلية | الصيغة |
+|---|---|
+| B1 (الاسم) | `=IFERROR(PROPER(LEFT(TRIM(VLOOKUP($B$2&"",Sheet1!$B:$L,2,FALSE)),FIND(" ",TRIM(VLOOKUP($B$2&"",Sheet1!$B:$L,2,FALSE))&" ")-1)&" "&TRIM(RIGHT(SUBSTITUTE(TRIM(VLOOKUP($B$2&"",Sheet1!$B:$L,2,FALSE))," ",REPT(" ",100)),100))),"")` |
+| B3 (الموقع) | `=IFERROR(SUBSTITUTE(VLOOKUP($B$2&"",Sheet1!$B:$L,11,FALSE),", Riyadh",""),"")` |
+| B7 (الجوال) | `=IFERROR(VLOOKUP($B$2&"",Sheet1!$B:$L,3,FALSE),"")` |
+| B8 (التاريخ) | `=TEXT(TODAY(),"dd-mmm")` |
+
+**3. أضف الماكرو:**
+- `Alt + F11` ← **Insert ← Module** ← الصق:
+
+```vba
+Sub AddToList()
+    Dim ws2 As Worksheet, ws3 As Worksheet, r As Long
+    Set ws2 = Sheets("Sheet2")
+    Set ws3 = Sheets("Sheet3")
+    r = ws3.Cells(ws3.Rows.Count, "A").End(xlUp).Row + 1
+    If r < 2 Then r = 2
+
+    ws3.Cells(r, "A").NumberFormat = "@"
+    ws3.Cells(r, "A").Value = ws2.Range("B2").Value   ' MRN
+    ws3.Cells(r, "B").Value = ws2.Range("B1").Value   ' Patient Name
+    ws3.Cells(r, "C").Value = ws2.Range("B7").Value   ' Mobile
+    ws3.Cells(r, "D").Value = ws2.Range("B3").Value   ' Address
+    ws3.Cells(r, "E").Value = ws2.Range("B4").Value   ' Share
+    ws3.Cells(r, "G").Value = ws2.Range("B5").Value   ' Fridge
+
+    ws2.Range("B2").ClearContents
+    ws2.Range("B2").Select
+End Sub
+```
+
+- اغلق نافذة VBA.
+
+**4. اربطه بزر:**
+- Sheet2 ← **Developer ← Insert ← Button (Form Control)**
+- ارسم الزر، واختر `AddToList` ← OK.
+- لو ما يظهر Developer: **File ← Options ← Customize Ribbon ← فعّل Developer**.
+
+**5. احفظ الملف:** `F12` ← Save as type ← **Excel Macro-Enabled Workbook (*.xlsm)** ← Save.
+
+**6. الاستخدام:**
+1. اكتب رقم الملف في B2.
+2. اكتب Share وFridge إذا تبي.
+3. اضغط الزر ← ينزل الصف في Sheet3، ويفضى B2 للمريض الجاي.
+4. Non Fr وDelivery وPH وRemarks تعبيها يدوي في Sheet3.
+
+---
+
+**الطريقة الثانية: بدون ماكرو** (تكتب الرقم في Sheet3 مباشرة)
+
+اكتب في الصف 2 من Sheet3 ثم اسحب لتحت:
+
+- **B2:** `=IF($A2="","",IFERROR(PROPER(LEFT(TRIM(VLOOKUP($A2&"",Sheet1!$B:$L,2,FALSE)),FIND(" ",TRIM(VLOOKUP($A2&"",Sheet1!$B:$L,2,FALSE))&" ")-1)&" "&TRIM(RIGHT(SUBSTITUTE(TRIM(VLOOKUP($A2&"",Sheet1!$B:$L,2,FALSE))," ",REPT(" ",100)),100))),""))`
+- **C2:** `=IF($A2="","",IFERROR(VLOOKUP($A2&"",Sheet1!$B:$L,3,FALSE),""))`
+- **D2:** `=IF($A2="","",IFERROR(SUBSTITUTE(VLOOKUP($A2&"",Sheet1!$B:$L,11,FALSE),", Riyadh",""),""))`
+
+ثم اكتب أرقام الملفات في العمود A (بتنسيق Text).
+
+---
+
+**ملاحظات:**
+- الطريقة الأولى تحتاج `.xlsm`، والثانية تشتغل بـ `.xlsx`.
+- في الطريقة الثانية، العنوان (الموقع) لازم يكون ملصوق في عمود Location (L) في Sheet1.
+- أي خطأ يطلع، أرسل صورته وأحله.
